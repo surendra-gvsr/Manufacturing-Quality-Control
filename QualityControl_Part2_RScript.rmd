@@ -1,0 +1,168 @@
+---
+title: "Quality_RScript"
+author: "Venkata Surendra Reddy Gujjula"
+date: "03-06-2024"
+output:
+  html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+Use control+Enter to run the code chunks on PC.
+Use  command+Enter to run the code chunks on MAC.
+
+## Load Packages
+
+In this section, we install and load the necessary packages. 
+
+```{r libraries, message=FALSE, include = FALSE}
+### Install packages. If you haven't install the following package, please uncomment the line below to install it. Then, comment it back before knitting the document.
+#install.packages("ggplot2")
+
+### load libraries for use in current working session
+library('dplyr')
+library('ggplot2')
+
+```
+
+## Import Data
+
+In this section, we import the necessary data for this lab.
+
+```{r import, include=FALSE}
+### set your working directory
+# use setwd to set your working directory
+
+# you can also go to session-> set working directory -> choose directory
+# working directory is the path to the folder and not file
+
+# make sure the path of the directory is correct, i.e., where you have stored your data
+setwd("D:/04-R-FUND OF BA/Data")
+
+### import data file
+# read the files using read.csv
+quality <- read.csv(file = "quality.csv")
+
+```
+
+# Quality Control Case
+
+Everybody seems to disagree about just why so many parts have to be fixed or thrown away after they are produced. Some say that it’s the temperature of the production process, which needs to be held constant (within a reasonable range). Others claim that it’s clearly the density of the product, and that if we could only produce a heavier material, the problems would disappear. Then there is Ole the site manager, who has been warning everyone forever to take care not to push the equipment beyond its limits. This problem would be the easiest to fix, simply by slowing down the production rate; however, this would increase costs. Unfortunately, rate is the only variable that the manager can control. Interestingly, many of the workers on the morning shift think that the problem is “those inexperienced workers in the afternoon,” who, curiously, feel the same way about the morning workers.
+
+Ever since the factory was automated, with computer network communication and bar code readers at each station, data have been piling up. After taking MGT314 class, you’ve finally decided to have a look. Your assistant aggregated the data by 4-hour blocks and then typed in the AM/PM variable, you found the following description of the variables:
+
+*temp*: measures the temperature variability as a standard deviation during the time of measurement
+
+*density*: indicates the density of the final product
+
+*rate*: rate of production
+
+*am*: 1 indicates morning and 0 afternoon
+
+*defect*: average number of defects per 1000 produced
+
+Do the following tasks and answer the questions below.
+
+## Task 1: data transformation, descriptive stats and visualization of 'am' variable
+
+*am* is categorical variable: 1 = morning and 0 = afternoon.
+1. Convert *am* to factor
+2. Plot the relationship between *am* and *defect* using a bar chart
+
+```{r amTask}
+
+# Correct the type of am by converting it to factor
+quality$am <- as.factor(quality$am)
+
+
+# Use bar chart to plot relationship between am and defect. Use am as x-axis, defect as y-axis. Remember to define stat="identity" inside geom_bar().
+ggplot(quality, aes(x = am, y = defect)) +
+  geom_bar(position = "dodge", stat = "identity",fill="Orange" ) +
+  labs(x = "Time of Day", y = "Average Defects per 1000 Products Produced") +
+  ggtitle("Average Defects per 1000 Products Produced by Time of Day")
+
+```
+
+**Question 1**:  What does the bar chart show?
+
+For the Bar chart we took x axis as am which time of the day where 0 indicates afternoon shifts and 1 indicates morning shifts. The Bar Chart shows that the Average defects per 1000 i.e defected products are produced  more during the morning shift.In Conclusion defects are more during morning shifts.
+
+
+
+## Task 2: Simple Regression Model with a Qualitative Preditor
+Use lm() to run a regression analysis on am as X (the dummy variable) and defect as Y.
+
+```{r qualityam}
+
+# Use lm() to run a regression analysis on am as X (the dummy variable) and defect as Y
+reg_am_def <- lm(defect ~ am, data = quality)
+summary(reg_am_def)
+
+
+```
+
+**Question 2**: How do you interpret the results? Interpret (1) the coefficient estimates, (2) p-value for beta1, (3) R-squared, and (4) p-value for F-statistics.
+
+ 1) From the results beta0 = 16.92 and beta1 = 20.44 as for the formula 
+ Y=beta0+(beta1)0 = 16.92 + (20.44)0 = 16.92  which is the coefficient for evening shift and now 
+ y=beta0+(beta1)1 = 16.92 + (20.44)1 = 37.36 will be the coefficient for morning shift which indicates that for  the defect rate is estimated to increase by 37.36 units when the time of day is morning.
+ 
+ 2) The p-value associated with the coefficient for 'am1' is 0.00229. This value is less than the typical significance level of 0.05, suggesting strong evidence that we can reject the null hypothesis that the true coefficient is zero.Therefore, we can conclude that there is a statistically significant difference in defect rates between morning and afternoon shifts.
+ 
+ 3) The R-squared value is 0.2867. This means that approximately 28.67% of the variability in the defect rate can be explained by the linear regression model with 'am' as the predictor.
+ 
+ 4) The p-value associated with the F-statistic is 0.002295. This value is less than 0.05, indicating that the model as a whole is statistically significant and at least one of the predictors has a non-zero effect on the defect rate.
+
+
+**Question 3**: Interestingly, many of the workers on the morning shift think that the problem is those inexperienced workers in the afternoon, who, curiously, feel the same way about the morning workers. Based on your regression analysis, do you think the claim by morning shift workers is true? 
+
+According to our analysis morning shift have higher defect rate when compared to evening shift so the claims made by the morning shift are not true.
+
+## Task 3: Multiple Regression Model
+
+Run a full model of multiple linear regression when defect is Y, and X's are temp, density, rate, am and interaction between rate and am.
+
+```{r qualityFull}
+
+# Use lm() to run a multiple regression analysis 
+
+
+mul_reg <- lm(defect ~ temp + density + rate + am + rate:am, data = quality)
+summary(mul_reg)
+
+```
+
+**Question 4**: How do you interpret the results?
+
+1) 'temp': A one-unit increase in temperature variability is associated with an estimated increase in the defect rate of 16.1557 units, but this effect is not significant (p = 0.05257).
+
+  'density': A one-unit increase in density is associated with an estimated decrease in the defect rate of 1.3264 units, but this effect is not statistically significant (p = 0.37739).
+  
+  'rate': There is no statistically significant relationship between production rate and defect rate (p = 0.86743).
+  
+  'am1' (morning): Being in the morning shift is associated with a decrease in defect rate of 86.7220 units, and this effect is statistically significant (p = 0.00448).
+  
+  'rate:am1': The interaction between production rate and morning shift is associated with an increase in defect rate of 0.3662 units for each unit increase in production rate during the morning shift, and this effect is statistically significant (p = 0.00360).
+  
+2) In this case, 'am1' and 'rate:am1' are significant at the 0.05 level, while 'temp' and 'density' are  not significant.
+
+3) The R-squared (0.9172) represents the proportion of variability is 91.72% in the defect rate. 
+
+4) The p-value is very small (3.326e-12), indicating that the model is significant at the 0.05 level and at least one of the predictors has a non-zero effect on the defect rate.
+
+
+**Question 5**: What is your final recommendation to your manager Ole? 
+
+My recommendation to  manager Ole is to decrease the production rate in the morning shift and train them well and then after that he can increase the prduction rate in the morning shift. This recommendation is based on the analysis I have done above where the defect rate in the morning shift is  very high and in the multiple regression the interaction between morning shift and rate is significant so I can conclude to reduce the rate of production in the morning. After getting training for the morning shift employees the defect rate will be reduced overall and then to reduce defect rate further more he can reduce the rate of production for the afternoon shift and train them aswell because when compared to morning shift evening shift has less defect rate but it still has significant impact on defect rate overall.So if he trains the afternoon shift workers after training morning shift workers overall defect rate will be much reduced.
+
+

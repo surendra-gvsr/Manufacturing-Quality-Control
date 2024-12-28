@@ -1,0 +1,170 @@
+---
+title: "Quality_RScript"
+author: "Venkata G"
+date: "02-24-2024"
+output:
+  html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+Use control+Enter to run the code chunks on PC.
+Use  command+Enter to run the code chunks on MAC.
+
+## Load Packages
+
+In this section, we install and load the necessary packages. 
+
+```{r libraries, message=FALSE, include = FALSE}
+### Install packages. If you haven't install the following package, please uncomment the line below to install it. Then, comment it back before knitting the document.
+#install.packages("ggplot2")
+
+### load libraries for use in current working session
+library('dplyr')
+library('ggplot2')
+
+```
+
+## Import Data
+
+In this section, we import the necessary data for this lab.
+
+```{r import, include=FALSE}
+### set your working directory
+# use setwd to set your working directory
+
+# you can also go to session-> set working directory -> choose directory
+# working directory is the path to the folder and not file
+
+# make sure the path of the directory is correct, i.e., where you have stored your data
+setwd("D:/04-R-FUND OF BA/Data")
+
+### import data file
+# read the files using read.csv
+quality <- read.csv(file = "quality.csv")
+```
+
+# Quality Control Case
+
+Everybody seems to disagree about just why so many parts have to be fixed or thrown away
+after they are produced. Some say that it’s the temperature of the production process, which needs to be held constant (within a reasonable range). Others claim that it’s clearly the density of the product, and that if we could only produce a heavier material, the problems would disappear. Then there is Ole the site manager, who has been warning everyone forever to take care not to push the equipment beyond its limits. This problem would be the easiest to fix, simply by slowing down the production rate; however, this would increase costs. Unfortunately, rate is the only variable that the manager can control. Interestingly, many of the workers on the morning shift think that the problem is “those inexperienced workers in the afternoon,” who, curiously, feel the same way about the morning workers.
+
+Ever since the factory was automated, with computer network communication and bar code readers at each station, data have been piling up. After taking MGT314 class, you’ve finally decided to have a look. Your assistant aggregated the data by 4-hour blocks and then typed in the AM/PM variable, you found the following description of the variables:
+
+*temp*: measures the temperature variability as a standard deviation during the time of measurement
+
+*density*: indicates the density of the final product
+
+*rate*: rate of production
+
+*am*: 1 indicates morning and 0 afternoon
+
+*defect*: average number of defects per 1000 produced
+
+Do the following tasks and answer the questions below.
+
+## Task 1: Explore your data
+Explore the dataset using 5 functions: dim(), str(), colnames(), head() and tail().
+
+```{r explore}
+
+# Explore the dataset using 5 functions: dim(), str(), colnames(), head() and tail()
+
+dim(quality)
+str(quality)
+colnames(quality)
+head(quality)
+tail(quality)
+
+
+```
+
+
+**Question 1**: what do we learn about the data? 
+1) The data contains of 30 rows and 5 columns.
+2) The 5 different variables are temp, density, rate, am and defect. temp, density, rate and num are numeric and am is an integer data type.
+3) The column names of data are temp, density, rate, am and defect.
+4) The top 5 rows of quality are displaying with temp number varying from 0.97 to 2.95, density varying from 20 to 32, rate is varying from 170 to 273 where as in am column 1 indicates morning and 0 indicates evening.
+5) The last 5 rows of quality are displaying with temp number varying from 1.7 to 2.95, density varying from 22 to 30, rate is varying from 207 to 253 where as in am column 1 indicates morning and 0 indicates evening.
+
+## Task 2: Run descriptive statistics
+Compute correlation between defect and temp, between defect and density, between defect and rate. Feel free to use dplyr functions if needed.
+
+```{r descriptive}
+# Descriptive stats for continuous variables
+
+quality %>%
+  summarise(
+    cor_defect_temp = cor(defect, temp),
+    cor_defect_densitty = cor(defect, density),
+    cor_defect_rate = cor(defect, rate)
+  )
+
+
+```
+
+
+**Question 2**: what do we learn about the data?
+
+1) There is a strong positive correlation (0.93) between the defect rate and temperature (temp). This shows that as the temperature increases, the defect rate tends to increase.
+
+2) There is a strong negative correlation (-0.92) between the defect rate and density of the final product. This shows that if density is more that tends to lower defect rates.
+
+3) There is a strong positive correlation (0.89) between the defect rate and production rate (rate). This shows that higher production rates are associated with higher defect rates.
+
+## Task 3: Identify response and predictor and plot the scatter plot
+Because we want to learn what variables impact the defect and how they impact the defect, the response (dependent variable) should be defect, and the 3 potential candidates of numerical predictors (independent variables) are temp, density, and rate. 
+
+Next, use ggplot() from ggplot2 package to create a scatter plot for the response and ONE of the predictors by YOUR CHOICE. You need to set defect as the y axis and the predictor you choose as the x axis. 
+
+```{r plot}
+
+# scatter plot of response vs. the predictor you choose. Set defect as the y axis and the predictor as the x axis. 
+ggplot(quality, aes(x = temp, y = defect)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(x = "Temperature", y = "Defect Rate") +
+  ggtitle("Scatter Plot of Defect Rate vs. Temperature with Linear Regression Line")
+
+
+
+```
+
+
+**Question 3** What does the scatter plot show? Write one line for the relationship between the response and the predictor.
+
+The scatter plot of defect versus temperature (temp) shows a strong positive correlation, where the data points align closely along a linear trend line, indicating that as temperature variability increases, the number of defects also tends to increase.. 
+
+
+## Task 4:	Simple Linear Regression
+Use the response and the predictor you selected in Task 3 to run regression analyses as instructed below.
+
+Use lm() to run a regression analysis on the predictor you selected in Task 3 as X and the response as Y. The, use function summary() to summarize the regression analysis.
+
+```{r regression1}
+
+
+reg_temp_def <- lm(defect ~ temp, data = quality)
+summary(reg_temp_def)
+
+```
+
+**Question 4**: How do you interpret the results? Interpret (1) the coefficient estimates, (2) p-value for beta1, (3) R-squared, and (4) p-value for F-statistics.
+
+1) The coefficient for the temperature variability (temp) is 30.915. This indicates that for every one unit increase in temperature variability, the defect rate is estimated to increase by 30.915 units. 
+
+2) The p-value associated with the coefficient for temp is very small (1.29e-13), which is less than the typical significance level of 0.05.Therefore, we can conclude that temperature variability (temp) has a statistically significant effect on the defect rate.
+
+3) The R-squared value is 0.8632. This means that approximately 86.32% of the variability in the defect rate can be explained by the linear regression model with temperature variability as the predictor. 
+
+4) The p-value associated with the F-statistic (1.29e-13) is very small. Therefore, the model as a whole is statistically significant, and at least one of the predictors  has a non-zero effect on the defect rate.
