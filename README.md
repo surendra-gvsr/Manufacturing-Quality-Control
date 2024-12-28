@@ -1,6 +1,5 @@
-# Manufacturing Quality Control
+# Manufacturing Quality Control Report
 
-# Quality Control Analysis Report
 
 ## 1. EXECUTIVE SUMMARY
 This analysis investigates manufacturing defect rates at an automated production facility where various stakeholders hold differing opinions about defect causes. Using data collected from computerized bar code readers across 30 production periods, we analyzed the relationships between defect rates and factors including temperature variability, density, production rate, and shift timing. Our analysis reveals that temperature variability and production rate significantly impact defect rates, with a particularly strong interaction between production rate and morning shifts. The data contradicts worker perceptions about shift performance, showing higher defect rates during morning shifts. Based on these findings, we recommend implementing a targeted training program for morning shift workers and optimizing production rates across both shifts to minimize defects.
